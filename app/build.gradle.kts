@@ -19,6 +19,18 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // One shared DEBUG key, committed on purpose (standard Android debug credentials,
+    // not secret). Without it every CI machine signs with a new random key, and phones
+    // refuse to update the app ("App not installed"). Never use this key for Play releases.
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
