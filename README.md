@@ -7,15 +7,13 @@ FocusGuard tracks how long you use each app, enforces daily limits, and runs foc
 
 ## Screenshots
 
-| Today | Limits | Focus session | Block screen |
+| **Today**<br><sub>Per-app time; red when a limit is reached</sub> | **Limits**<br><sub>Daily cap and/or block during focus</sub> | **Focus session**<br><sub>Live countdown; strict mode blocks quitting</sub> | **Block screen**<br><sub>Covers the app, suggests something better</sub> |
 |:---:|:---:|:---:|:---:|
-| <img src="docs/screenshots/today.png" width="220" alt="Today: screen time per app with limit progress"> | <img src="docs/screenshots/limits.png" width="220" alt="Limits: daily caps per app"> | <img src="docs/screenshots/focus.png" width="220" alt="Focus: countdown with apps paused"> | <img src="docs/screenshots/block.png" width="220" alt="Block screen shown when a limit is used up"> |
-| Total time, per-app usage, red when a limit is reached | Daily cap and/or "block during focus" for each app | Live countdown; strict mode stops ending early | Covers the app and suggests something better to do |
+| <img src="docs/screenshots/today.png" width="200" alt="Today: Per-app time; red when a limit is reached"> | <img src="docs/screenshots/limits.png" width="200" alt="Limits: Daily cap and/or block during focus"> | <img src="docs/screenshots/focus.png" width="200" alt="Focus session: Live countdown; strict mode blocks quitting"> | <img src="docs/screenshots/block.png" width="200" alt="Block screen: Covers the app, suggests something better"> |
 
-| First-run setup | Start a focus session | Settings | Dark mode |
+| **First-run setup**<br><sub>No account; each permission explained</sub> | **Start focus**<br><sub>15 min to 1h 30m, Pomodoro-friendly</sub> | **Settings**<br><sub>Strict mode, permission checks, your data</sub> | **Dark mode**<br><sub>Follows the phone's theme</sub> |
 |:---:|:---:|:---:|:---:|
-| <img src="docs/screenshots/onboarding.png" width="220" alt="Onboarding: permission steps"> | <img src="docs/screenshots/focus_start.png" width="220" alt="Choose focus duration"> | <img src="docs/screenshots/settings.png" width="220" alt="Settings: strict mode and permission health"> | <img src="docs/screenshots/today_dark.png" width="220" alt="Today screen in dark theme"> |
-| No account, just the permissions you need, each explained | 15 minutes to 1h 30m, Pomodoro-friendly | Strict mode, permission checks, delete your data | Follows the phone's theme |
+| <img src="docs/screenshots/onboarding.png" width="200" alt="First-run setup: No account; each permission explained"> | <img src="docs/screenshots/focus_start.png" width="200" alt="Start focus: 15 min to 1h 30m, Pomodoro-friendly"> | <img src="docs/screenshots/settings.png" width="200" alt="Settings: Strict mode, permission checks, your data"> | <img src="docs/screenshots/today_dark.png" width="200" alt="Dark mode: Follows the phone's theme"> |
 
 <sub>The screenshots use sample data and are rendered automatically from the real UI code by [`ReadmeScreenshots`](app/src/test/java/com/focusguard/app/ui/ReadmeScreenshots.kt) (Roborazzi + Robolectric). They're regenerated whenever UI code changes (`.github/workflows/screenshots.yml`). App icons appear as letter avatars in the screenshots; on a phone you see each app's real icon.</sub>
 
