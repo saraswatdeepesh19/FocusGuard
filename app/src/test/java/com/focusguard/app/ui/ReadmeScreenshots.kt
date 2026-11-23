@@ -32,7 +32,7 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
 /**
- * Renders the app's screens with realistic sample data into docs/screenshots/*.png
+ * Renders the app's screens with realistic sample data as PNG files in docs/screenshots
  * for the README. Run with:  ./gradlew testDebugUnitTest -Proborazzi.test.record=true
  * (CI does this automatically via .github/workflows/screenshots.yml).
  */
