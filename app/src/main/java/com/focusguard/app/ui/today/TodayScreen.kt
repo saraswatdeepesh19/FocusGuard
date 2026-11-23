@@ -33,6 +33,7 @@ import com.focusguard.app.ui.components.AppIcon
 import com.focusguard.app.ui.components.ScreenHeader
 import com.focusguard.app.ui.components.WarningCard
 import com.focusguard.app.ui.components.rememberPermissionSnapshot
+import com.focusguard.app.util.PermissionSnapshot
 import com.focusguard.app.util.formatDuration
 import com.focusguard.app.util.formatMinutes
 import kotlinx.coroutines.delay
@@ -56,16 +57,31 @@ fun TodayScreen(
         }
     }
 
+    TodayContent(
+        state = state,
+        permissions = permissions,
+        dateText = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, d MMMM")),
+        onOpenLimits = onOpenLimits,
+        onOpenSettings = onOpenSettings,
+    )
+}
+
+/** Stateless UI for the Today tab (also used to render README screenshots). */
+@Composable
+fun TodayContent(
+    state: TodayState,
+    permissions: PermissionSnapshot,
+    dateText: String,
+    onOpenLimits: () -> Unit,
+    onOpenSettings: () -> Unit,
+) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
-            ScreenHeader(
-                title = "Today",
-                subtitle = LocalDate.now().format(DateTimeFormatter.ofPattern("EEEE, d MMMM")),
-            )
+            ScreenHeader(title = "Today", subtitle = dateText)
         }
 
         if (!permissions.usageAccess) {
@@ -172,7 +188,7 @@ private fun UsageRow(row: AppUsageRow) {
         modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        AppIcon(row.packageName)
+        AppIcon(row.packageName, label = row.label)
         Spacer(Modifier.width(14.dp))
         Column(Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {

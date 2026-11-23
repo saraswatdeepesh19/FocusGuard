@@ -40,6 +40,7 @@ import com.focusguard.app.appContainer
 import com.focusguard.app.ui.components.AccessibilityDisclosureDialog
 import com.focusguard.app.ui.components.ScreenHeader
 import com.focusguard.app.ui.components.rememberPermissionSnapshot
+import com.focusguard.app.util.PermissionSnapshot
 import com.focusguard.app.util.Permissions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -70,99 +71,24 @@ fun SettingsScreen() {
 
     val focusRunning = activeFocus?.let { System.currentTimeMillis() < it.plannedEndAt } == true
 
-    Column(
-        Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(bottom = 24.dp),
-    ) {
-        ScreenHeader(title = "Settings")
-
-        Section("Commitment") {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f)) {
-                    Text("Strict mode", style = MaterialTheme.typography.titleMedium)
-                    Text(
-                        "Limits can only be made stricter, can't be deleted, and focus sessions can't be ended early.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                Switch(
-                    checked = strict,
-                    onCheckedChange = { turnOn ->
-                        when {
-                            turnOn -> scope.launch { container.settings.setStrictMode(true) }
-                            focusRunning -> message = "Strict mode can't be turned off during a focus session."
-                            else -> confirmStrictOff = true
-                        }
-                    },
-                )
+    SettingsContent(
+        strict = strict,
+        installId = installId,
+        permissions = permissions,
+        message = message,
+        onStrictChange = { turnOn ->
+            when {
+                turnOn -> scope.launch { container.settings.setStrictMode(true) }
+                focusRunning -> message = "Strict mode can't be turned off during a focus session."
+                else -> confirmStrictOff = true
             }
-            message?.let {
-                Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
-            }
-        }
-
-        Section("Permissions") {
-            PermissionRow(
-                title = "Usage access",
-                description = "Needed to measure screen time.",
-                granted = permissions.usageAccess,
-                onFix = { Permissions.openUsageAccessSettings(context) },
-            )
-            HorizontalDivider()
-            PermissionRow(
-                title = "App blocking (Accessibility)",
-                description = "Needed to block apps. Only sees which app is open.",
-                granted = permissions.accessibility,
-                onFix = { showDisclosure = true },
-            )
-            if (Build.VERSION.SDK_INT >= 33) {
-                HorizontalDivider()
-                PermissionRow(
-                    title = "Notifications",
-                    description = "Tells you when a focus session ends.",
-                    granted = permissions.notifications,
-                    onFix = { notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS) },
-                )
-            }
-            HorizontalDivider()
-            PermissionRow(
-                title = "Battery: unrestricted",
-                description = "Stops your phone from killing the blocker in the background.",
-                granted = permissions.batteryUnrestricted,
-                onFix = { Permissions.openBatterySettings(context) },
-            )
-        }
-
-        Section("Your data") {
-            Text(
-                "FocusGuard has no account and no internet access. Your screen time, limits and focus " +
-                    "history are stored only on this phone and are deleted when you uninstall the app.",
-                style = MaterialTheme.typography.bodyMedium,
-            )
-            Text(
-                "Device ID: ${installId?.take(8) ?: "…"} (random, never leaves this phone)",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            TextButton(onClick = { confirmDeleteAll = true }, enabled = !strict) {
-                Text("Delete all my data", color = MaterialTheme.colorScheme.error)
-            }
-            if (strict) {
-                Text(
-                    "Turn off strict mode to delete data.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
-
-        Section("About") {
-            Text("FocusGuard ${BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.bodyMedium)
-        }
-    }
+        },
+        onFixUsage = { Permissions.openUsageAccessSettings(context) },
+        onFixAccessibility = { showDisclosure = true },
+        onFixNotifications = { notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS) },
+        onFixBattery = { Permissions.openBatterySettings(context) },
+        onDeleteAll = { confirmDeleteAll = true },
+    )
 
     if (confirmStrictOff) {
         AlertDialog(
@@ -208,6 +134,110 @@ fun SettingsScreen() {
             onDismiss = { showDisclosure = false },
         )
     }
+}
+
+/** Stateless UI for the Settings tab (also used to render README screenshots). */
+@Composable
+fun SettingsContent(
+    strict: Boolean,
+    installId: String?,
+    permissions: PermissionSnapshot,
+    message: String?,
+    onStrictChange: (Boolean) -> Unit,
+    onFixUsage: () -> Unit,
+    onFixAccessibility: () -> Unit,
+    onFixNotifications: () -> Unit,
+    onFixBattery: () -> Unit,
+    onDeleteAll: () -> Unit,
+) {
+    Column(
+        Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(bottom = 24.dp),
+    ) {
+        ScreenHeader(title = "Settings")
+
+        Section("Commitment") {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text("Strict mode", style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        "Limits can only be made stricter, can't be deleted, and focus sessions can't be ended early.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(
+                    checked = strict,
+                    onCheckedChange = onStrictChange,
+                )
+            }
+            message?.let {
+                Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+            }
+        }
+
+        Section("Permissions") {
+            PermissionRow(
+                title = "Usage access",
+                description = "Needed to measure screen time.",
+                granted = permissions.usageAccess,
+                onFix = onFixUsage,
+            )
+            HorizontalDivider()
+            PermissionRow(
+                title = "App blocking (Accessibility)",
+                description = "Needed to block apps. Only sees which app is open.",
+                granted = permissions.accessibility,
+                onFix = onFixAccessibility,
+            )
+            if (Build.VERSION.SDK_INT >= 33) {
+                HorizontalDivider()
+                PermissionRow(
+                    title = "Notifications",
+                    description = "Tells you when a focus session ends.",
+                    granted = permissions.notifications,
+                    onFix = onFixNotifications,
+                )
+            }
+            HorizontalDivider()
+            PermissionRow(
+                title = "Battery: unrestricted",
+                description = "Stops your phone from killing the blocker in the background.",
+                granted = permissions.batteryUnrestricted,
+                onFix = onFixBattery,
+            )
+        }
+
+        Section("Your data") {
+            Text(
+                "FocusGuard has no account and no internet access. Your screen time, limits and focus " +
+                    "history are stored only on this phone and are deleted when you uninstall the app.",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Text(
+                "Device ID: ${installId?.take(8) ?: "…"} (random, never leaves this phone)",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            TextButton(onClick = onDeleteAll, enabled = !strict) {
+                Text("Delete all my data", color = MaterialTheme.colorScheme.error)
+            }
+            if (strict) {
+                Text(
+                    "Turn off strict mode to delete data.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+
+        Section("About") {
+            Text("FocusGuard ${BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.bodyMedium)
+        }
+    }
+
 }
 
 @Composable

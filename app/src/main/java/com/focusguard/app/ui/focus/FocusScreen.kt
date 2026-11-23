@@ -71,9 +71,41 @@ fun FocusScreen(onOpenLimits: () -> Unit, onOpenSettings: () -> Unit) {
         if (expiredId != null) container.focus.completeIfActive(expiredId)
     }
 
-    val blockedCount = limits.count { it.blockDuringFocus }
     val running = active?.takeIf { now < it.plannedEndAt }
 
+    FocusContent(
+        running = running,
+        now = now,
+        blockedCount = limits.count { it.blockDuringFocus },
+        strict = strict,
+        blockingEnabled = permissions.accessibility,
+        defaultMinutes = defaultMinutes,
+        onStart = { minutes ->
+            scope.launch {
+                container.settings.setFocusDefaultMinutes(minutes)
+                container.focus.start(minutes)
+            }
+        },
+        onEndEarly = { session -> scope.launch { container.focus.cancelIfActive(session.id) } },
+        onOpenLimits = onOpenLimits,
+        onOpenSettings = onOpenSettings,
+    )
+}
+
+/** Stateless UI for the Focus tab (also used to render README screenshots). */
+@Composable
+fun FocusContent(
+    running: FocusSessionEntity?,
+    now: Long,
+    blockedCount: Int,
+    strict: Boolean,
+    blockingEnabled: Boolean,
+    defaultMinutes: Int,
+    onStart: (Int) -> Unit,
+    onEndEarly: (FocusSessionEntity) -> Unit,
+    onOpenLimits: () -> Unit,
+    onOpenSettings: () -> Unit,
+) {
     Column(
         Modifier
             .fillMaxSize()
@@ -88,7 +120,7 @@ fun FocusScreen(onOpenLimits: () -> Unit, onOpenSettings: () -> Unit) {
             Modifier.padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            if (!permissions.accessibility) {
+            if (!blockingEnabled) {
                 WarningCard(
                     title = "Blocking is off",
                     body = "Focus sessions can't block apps until the FocusGuard accessibility service is on.",
@@ -111,18 +143,10 @@ fun FocusScreen(onOpenLimits: () -> Unit, onOpenSettings: () -> Unit) {
                     now = now,
                     blockedCount = blockedCount,
                     strict = strict,
-                    onEndEarly = { scope.launch { container.focus.cancelIfActive(running.id) } },
+                    onEndEarly = { onEndEarly(running) },
                 )
             } else {
-                StartSession(
-                    defaultMinutes = defaultMinutes,
-                    onStart = { minutes ->
-                        scope.launch {
-                            container.settings.setFocusDefaultMinutes(minutes)
-                            container.focus.start(minutes)
-                        }
-                    },
-                )
+                StartSession(defaultMinutes = defaultMinutes, onStart = onStart)
             }
         }
     }

@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import com.focusguard.app.appContainer
 import com.focusguard.app.ui.components.AccessibilityDisclosureDialog
 import com.focusguard.app.ui.components.rememberPermissionSnapshot
+import com.focusguard.app.util.PermissionSnapshot
 import com.focusguard.app.util.Permissions
 import kotlinx.coroutines.launch
 
@@ -63,6 +64,39 @@ fun OnboardingScreen(onFinished: () -> Unit) {
     val notificationsGranted = permissions.notifications ||
         (notificationAsked && Permissions.hasNotificationPermission(context))
 
+    OnboardingContent(
+        permissions = permissions,
+        notificationsGranted = notificationsGranted,
+        onAllowUsage = { Permissions.openUsageAccessSettings(context) },
+        onAllowBlocking = { showDisclosure = true },
+        onAllowNotifications = { notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS) },
+        onOpenBattery = { Permissions.openBatterySettings(context) },
+        onFinished = onFinished,
+    )
+
+    if (showDisclosure) {
+        AccessibilityDisclosureDialog(
+            onAccept = {
+                showDisclosure = false
+                scope.launch { container.settings.setDisclosureAccepted(true) }
+                Permissions.openAccessibilitySettings(context)
+            },
+            onDismiss = { showDisclosure = false },
+        )
+    }
+}
+
+/** Stateless first-run UI (also used to render README screenshots). */
+@Composable
+fun OnboardingContent(
+    permissions: PermissionSnapshot,
+    notificationsGranted: Boolean,
+    onAllowUsage: () -> Unit,
+    onAllowBlocking: () -> Unit,
+    onAllowNotifications: () -> Unit,
+    onOpenBattery: () -> Unit,
+    onFinished: () -> Unit,
+) {
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(
             Modifier
@@ -103,7 +137,7 @@ fun OnboardingScreen(onFinished: () -> Unit) {
                 body = "Allow \"Usage access\" so FocusGuard can see how long each app is open. Find FocusGuard in the list and switch it on.",
                 done = permissions.usageAccess,
                 actionLabel = "Allow usage access",
-                onAction = { Permissions.openUsageAccessSettings(context) },
+                onAction = onAllowUsage,
             )
 
             SetupStep(
@@ -112,7 +146,7 @@ fun OnboardingScreen(onFinished: () -> Unit) {
                 body = "Turn on the FocusGuard accessibility service. It only learns which app is open — it can't read your screen.",
                 done = permissions.accessibility,
                 actionLabel = "Turn on blocking",
-                onAction = { showDisclosure = true },
+                onAction = onAllowBlocking,
             )
 
             if (Build.VERSION.SDK_INT >= 33) {
@@ -122,7 +156,7 @@ fun OnboardingScreen(onFinished: () -> Unit) {
                     body = "Get a notification when a focus session ends. Optional.",
                     done = notificationsGranted,
                     actionLabel = "Allow notifications",
-                    onAction = { notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS) },
+                    onAction = onAllowNotifications,
                 )
             }
 
@@ -134,7 +168,7 @@ fun OnboardingScreen(onFinished: () -> Unit) {
                     "and \"Display pop-up windows while running in background\".",
                 done = permissions.batteryUnrestricted,
                 actionLabel = "Open battery settings",
-                onAction = { Permissions.openBatterySettings(context) },
+                onAction = onOpenBattery,
             )
 
             Spacer(Modifier.height(8.dp))
@@ -151,16 +185,6 @@ fun OnboardingScreen(onFinished: () -> Unit) {
         }
     }
 
-    if (showDisclosure) {
-        AccessibilityDisclosureDialog(
-            onAccept = {
-                showDisclosure = false
-                scope.launch { container.settings.setDisclosureAccepted(true) }
-                Permissions.openAccessibilitySettings(context)
-            },
-            onDismiss = { showDisclosure = false },
-        )
-    }
 }
 
 @Composable

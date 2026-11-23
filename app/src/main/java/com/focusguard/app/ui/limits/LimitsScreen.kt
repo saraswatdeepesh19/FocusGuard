@@ -73,43 +73,13 @@ fun LimitsScreen() {
     var picking by remember { mutableStateOf(false) }
     var editing by remember { mutableStateOf<EditTarget?>(null) }
 
-    Box(Modifier.fillMaxSize()) {
-        LazyColumn(
-            contentPadding = PaddingValues(bottom = 96.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            item {
-                ScreenHeader(
-                    title = "Limits",
-                    subtitle = if (strict) "Strict mode is on: limits can only get stricter."
-                    else "Daily time caps and focus-session blocking, per app.",
-                )
-            }
-            if (limits.isEmpty()) {
-                item {
-                    Text(
-                        "No limits yet. Tap \"Add app\" and start with the app that takes most of your time.",
-                        modifier = Modifier.padding(horizontal = 20.dp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-            items(limits, key = { it.id }) { limit ->
-                LimitCard(
-                    limit = limit,
-                    canDelete = !strict,
-                    onEdit = { editing = EditTarget(limit.packageName, limit.appLabel, limit) },
-                    onDelete = { scope.launch { container.limits.delete(limit) } },
-                )
-            }
-        }
-        ExtendedFloatingActionButton(
-            onClick = { picking = true },
-            icon = { Icon(Icons.Filled.Add, contentDescription = null) },
-            text = { Text("Add app") },
-            modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
-        )
-    }
+    LimitsContent(
+        limits = limits,
+        strict = strict,
+        onAdd = { picking = true },
+        onEdit = { limit -> editing = EditTarget(limit.packageName, limit.appLabel, limit) },
+        onDelete = { limit -> scope.launch { container.limits.delete(limit) } },
+    )
 
     if (picking) {
         AppPickerDialog(
@@ -137,6 +107,55 @@ fun LimitsScreen() {
     }
 }
 
+/** Stateless UI for the Limits tab (also used to render README screenshots). */
+@Composable
+fun LimitsContent(
+    limits: List<AppLimitEntity>,
+    strict: Boolean,
+    onAdd: () -> Unit,
+    onEdit: (AppLimitEntity) -> Unit,
+    onDelete: (AppLimitEntity) -> Unit,
+) {
+    Box(Modifier.fillMaxSize()) {
+        LazyColumn(
+            contentPadding = PaddingValues(bottom = 96.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            item {
+                ScreenHeader(
+                    title = "Limits",
+                    subtitle = if (strict) "Strict mode is on: limits can only get stricter."
+                    else "Daily time caps and focus-session blocking, per app.",
+                )
+            }
+            if (limits.isEmpty()) {
+                item {
+                    Text(
+                        "No limits yet. Tap \"Add app\" and start with the app that takes most of your time.",
+                        modifier = Modifier.padding(horizontal = 20.dp),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            items(limits, key = { it.id }) { limit ->
+                LimitCard(
+                    limit = limit,
+                    canDelete = !strict,
+                    onEdit = { onEdit(limit) },
+                    onDelete = { onDelete(limit) },
+                )
+            }
+        }
+        ExtendedFloatingActionButton(
+            onClick = onAdd,
+            icon = { Icon(Icons.Filled.Add, contentDescription = null) },
+            text = { Text("Add app") },
+            modifier = Modifier.align(Alignment.BottomEnd).padding(16.dp),
+        )
+    }
+
+}
+
 @Composable
 private fun LimitCard(
     limit: AppLimitEntity,
@@ -146,7 +165,7 @@ private fun LimitCard(
 ) {
     Card(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
         Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            AppIcon(limit.packageName)
+            AppIcon(limit.packageName, label = limit.appLabel)
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
                 Text(limit.appLabel, style = MaterialTheme.typography.titleMedium, maxLines = 1)
@@ -211,7 +230,7 @@ private fun AppPickerDialog(
                                     .padding(vertical = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                AppIcon(app.packageName, size = 32.dp)
+                                AppIcon(app.packageName, size = 32.dp, label = app.label)
                                 Spacer(Modifier.width(12.dp))
                                 Text(app.label, maxLines = 1)
                             }
@@ -248,7 +267,7 @@ private fun LimitEditorDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        icon = { AppIcon(target.packageName, size = 48.dp) },
+        icon = { AppIcon(target.packageName, size = 48.dp, label = target.label) },
         title = { Text(target.label) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {

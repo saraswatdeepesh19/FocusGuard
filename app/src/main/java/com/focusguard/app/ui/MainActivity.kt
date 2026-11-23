@@ -68,7 +68,7 @@ private fun AppRoot() {
     }
 }
 
-private enum class Destination(val route: String, val label: String, val icon: ImageVector) {
+internal enum class Destination(val route: String, val label: String, val icon: ImageVector) {
     TODAY("today", "Today", Icons.Filled.Home),
     LIMITS("limits", "Limits", Icons.Filled.Lock),
     FOCUS("focus", "Focus", Icons.Filled.PlayArrow),
@@ -83,16 +83,7 @@ private fun MainScaffold() {
 
     Scaffold(
         bottomBar = {
-            NavigationBar {
-                Destination.entries.forEach { dest ->
-                    NavigationBarItem(
-                        selected = currentRoute == dest.route,
-                        onClick = { navController.navigateToTab(dest.route) },
-                        icon = { Icon(dest.icon, contentDescription = null) },
-                        label = { Text(dest.label) },
-                    )
-                }
-            }
+            AppBottomBar(currentRoute = currentRoute, onSelect = { navController.navigateToTab(it.route) })
         },
     ) { innerPadding ->
         NavHost(
@@ -114,6 +105,20 @@ private fun MainScaffold() {
                 )
             }
             composable(Destination.SETTINGS.route) { SettingsScreen() }
+        }
+    }
+}
+
+@Composable
+internal fun AppBottomBar(currentRoute: String?, onSelect: (Destination) -> Unit) {
+    NavigationBar {
+        Destination.entries.forEach { dest ->
+            NavigationBarItem(
+                selected = currentRoute == dest.route,
+                onClick = { onSelect(dest) },
+                icon = { Icon(dest.icon, contentDescription = null) },
+                label = { Text(dest.label) },
+            )
         }
     }
 }

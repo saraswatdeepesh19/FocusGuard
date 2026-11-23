@@ -44,7 +44,7 @@ import com.focusguard.app.util.formatMinutes
 import kotlinx.coroutines.delay
 import kotlin.random.Random
 
-private data class BlockInfo(
+internal data class BlockInfo(
     val packageName: String,
     val appLabel: String,
     val reason: BlockReason,
@@ -147,11 +147,17 @@ private val SUGGESTIONS = listOf(
 )
 
 @Composable
-private fun BlockScreen(info: BlockInfo, onGoHome: () -> Unit, onOpenApp: () -> Unit) {
-    var suggestionIndex by remember { mutableIntStateOf(Random.nextInt(SUGGESTIONS.size)) }
-    val now by produceState(System.currentTimeMillis(), info.focusEndAt) {
+internal fun BlockScreen(
+    info: BlockInfo,
+    onGoHome: () -> Unit,
+    onOpenApp: () -> Unit,
+    initialSuggestion: Int = remember { Random.nextInt(SUGGESTIONS.size) },
+    clock: () -> Long = System::currentTimeMillis,
+) {
+    var suggestionIndex by remember { mutableIntStateOf(initialSuggestion % SUGGESTIONS.size) }
+    val now by produceState(clock(), info.focusEndAt) {
         while (info.focusEndAt != null) {
-            value = System.currentTimeMillis()
+            value = clock()
             delay(1_000)
         }
     }
@@ -178,7 +184,7 @@ private fun BlockScreen(info: BlockInfo, onGoHome: () -> Unit, onOpenApp: () -> 
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
-            AppIcon(info.packageName, size = 72.dp)
+            AppIcon(info.packageName, size = 72.dp, label = info.appLabel)
             Spacer(Modifier.height(20.dp))
             Text(
                 title,

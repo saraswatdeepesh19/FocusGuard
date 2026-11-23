@@ -32,12 +32,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
@@ -71,7 +73,12 @@ private object IconCache {
 }
 
 @Composable
-fun AppIcon(packageName: String, modifier: Modifier = Modifier, size: Dp = 40.dp) {
+fun AppIcon(
+    packageName: String,
+    modifier: Modifier = Modifier,
+    size: Dp = 40.dp,
+    label: String? = null,
+) {
     val context = LocalContext.current
     val bitmap by produceState(initialValue = IconCache.peek(packageName), packageName) {
         if (value == null) value = withContext(Dispatchers.IO) { IconCache.load(context, packageName) }
@@ -80,11 +87,30 @@ fun AppIcon(packageName: String, modifier: Modifier = Modifier, size: Dp = 40.dp
     if (image != null) {
         Image(bitmap = image, contentDescription = null, modifier = modifier.size(size))
     } else {
-        Box(
-            modifier
-                .size(size)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.surfaceVariant)
+        LetterAvatar(label ?: packageName.substringAfterLast('.'), packageName, modifier, size)
+    }
+}
+
+/** Fallback when an app's icon can't be loaded: a coloured circle with its first letter. */
+@Composable
+private fun LetterAvatar(name: String, seed: String, modifier: Modifier, size: Dp) {
+    val palette = listOf(
+        Color(0xFF00696B), Color(0xFF8A5100), Color(0xFF4B607C),
+        Color(0xFF7D4E7D), Color(0xFF3B6939), Color(0xFFA23B3B),
+    )
+    val color = palette[(seed.hashCode() and Int.MAX_VALUE) % palette.size]
+    Box(
+        modifier
+            .size(size)
+            .clip(CircleShape)
+            .background(color),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            name.firstOrNull()?.uppercaseChar()?.toString() ?: "?",
+            color = Color.White,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = (size.value * 0.45f).sp,
         )
     }
 }
