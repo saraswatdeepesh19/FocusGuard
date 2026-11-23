@@ -3,6 +3,22 @@
 FocusGuard tracks how long you use each app, enforces daily limits, and runs focus sessions that pause distracting apps.
 **v1.0 has no login, no server and no INTERNET permission.** All data stays on the phone.
 
+**[⬇ Download the latest APK](https://github.com/saraswatdeepesh19/FocusGuard/releases/download/latest/app-debug.apk)**. Open this link on your Android phone, then tap the file to install.
+
+## Screenshots
+
+| Today | Limits | Focus session | Block screen |
+|:---:|:---:|:---:|:---:|
+| <img src="docs/screenshots/today.png" width="220" alt="Today: screen time per app with limit progress"> | <img src="docs/screenshots/limits.png" width="220" alt="Limits: daily caps per app"> | <img src="docs/screenshots/focus.png" width="220" alt="Focus: countdown with apps paused"> | <img src="docs/screenshots/block.png" width="220" alt="Block screen shown when a limit is used up"> |
+| Total time, per-app usage, red when a limit is reached | Daily cap and/or "block during focus" for each app | Live countdown; strict mode stops ending early | Covers the app and suggests something better to do |
+
+| First-run setup | Start a focus session | Settings | Dark mode |
+|:---:|:---:|:---:|:---:|
+| <img src="docs/screenshots/onboarding.png" width="220" alt="Onboarding: permission steps"> | <img src="docs/screenshots/focus_start.png" width="220" alt="Choose focus duration"> | <img src="docs/screenshots/settings.png" width="220" alt="Settings: strict mode and permission health"> | <img src="docs/screenshots/today_dark.png" width="220" alt="Today screen in dark theme"> |
+| No account, just the permissions you need, each explained | 15 minutes to 1h 30m, Pomodoro-friendly | Strict mode, permission checks, delete your data | Follows the phone's theme |
+
+<sub>The screenshots use sample data and are rendered automatically from the real UI code by [`ReadmeScreenshots`](app/src/test/java/com/focusguard/app/ui/ReadmeScreenshots.kt) (Roborazzi + Robolectric). They're regenerated whenever UI code changes (`.github/workflows/screenshots.yml`). App icons appear as letter avatars in the screenshots; on a phone you see each app's real icon.</sub>
+
 ## Features
 
 | Screen | What it does |
@@ -22,7 +38,10 @@ FocusGuard tracks how long you use each app, enforces daily limits, and runs foc
 2. **File → Open** → select this `FocusGuard` folder. Let Gradle sync (the first sync downloads ~1 GB).
 3. If Android Studio offers to upgrade AGP/Kotlin, you can accept. The project uses AGP 8.7.3, Kotlin 2.0.21, Gradle 8.11.1.
 4. Connect an Android phone with USB debugging on (or start an emulator), then press **Run ▶**.
-5. Unit tests: `./gradlew test` (covers the block rules, strict mode and time formatting).
+5. Unit tests: `./gradlew testDebugUnitTest` (covers the block rules, strict mode and time formatting).
+6. Regenerate README screenshots: `./gradlew testDebugUnitTest --tests "*ReadmeScreenshots" -Proborazzi.test.record=true`.
+
+**No Android Studio?** Every push to `main` is built by GitHub Actions (`.github/workflows/build-apk.yml`), and the APK is published on the [Releases page](https://github.com/saraswatdeepesh19/FocusGuard/releases/tag/latest).
 
 **Testing on a real phone is strongly recommended.** Emulators don't show realistic usage data.
 

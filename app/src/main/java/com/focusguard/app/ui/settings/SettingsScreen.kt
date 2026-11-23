@@ -222,7 +222,7 @@ fun SettingsContent(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             TextButton(onClick = onDeleteAll, enabled = !strict) {
-                Text("Delete all my data", color = MaterialTheme.colorScheme.error)
+                Text("Delete all my data", color = if (strict) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error)
             }
             if (strict) {
                 Text(
