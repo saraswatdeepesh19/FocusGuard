@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Shield with an hourglass: "guarding your time". Drawn inside the 66dp safe zone. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M54,28 L76,36 L76,54 C76,67 66.5,77.5 54,81 C41.5,77.5 32,67 32,54 L32,36 Z" />
+    <path
+        android:fillColor="#FF00696B"
+        android:pathData="M45,42 L63,42 L63,46 C63,50 59,53 56.5,54.5 C59,56 63,59 63,63 L63,67 L45,67 L45,63 C45,59 49,56 51.5,54.5 C49,53 45,50 45,46 Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M49,63.5 C49,61 52,59 54,58 C56,59 59,61 59,63.5 Z" />
+</vector>

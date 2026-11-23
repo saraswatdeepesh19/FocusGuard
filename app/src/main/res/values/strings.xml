@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FocusGuard</string>
+    <string name="accessibility_label">FocusGuard app blocker</string>
+    <string name="accessibility_description">FocusGuard uses this service only to see which app you open, so it can block that app when its daily limit is used up or during a focus session. It cannot read text or content on your screen. Nothing leaves your phone.</string>
+    <string name="channel_focus">Focus sessions</string>
+    <string name="channel_focus_desc">Tells you when a focus session ends</string>
+</resources>
