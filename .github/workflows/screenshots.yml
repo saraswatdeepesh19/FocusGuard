@@ -33,11 +33,20 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Render screenshots
+      # Robolectric downloads an Android runtime jar on first use; cache it between runs.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository/org/robolectric
+          key: robolectric-android-all-34
+
+      - name: Render screenshots (retries once on network hiccups)
         run: |
           chmod +x gradlew
-          ./gradlew testDebugUnitTest --tests "com.focusguard.app.ui.ReadmeScreenshots" \
-            -Proborazzi.test.record=true --stacktrace
+          render() {
+            ./gradlew testDebugUnitTest --tests "com.focusguard.app.ui.ReadmeScreenshots" \
+              -Proborazzi.test.record=true --stacktrace
+          }
+          render || { echo "Retrying in 20s..."; sleep 20; render; }
 
       - name: Commit updated screenshots
         run: |

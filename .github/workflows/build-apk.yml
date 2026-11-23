@@ -27,7 +27,8 @@ jobs:
       - name: Run unit tests and build debug APK
         run: |
           chmod +x gradlew
-          ./gradlew testDebugUnitTest assembleDebug --stacktrace
+          # Screenshot rendering lives in screenshots.yml; keep the APK build fast and offline-safe.
+          ./gradlew testDebugUnitTest --tests "com.focusguard.app.BlockPolicyTest" assembleDebug --stacktrace
 
       - uses: actions/upload-artifact@v4
         with:
